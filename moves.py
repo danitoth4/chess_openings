@@ -58,7 +58,3 @@ class MoveTree:
 
         self._current_nid = candidates[0].identifier
         self._player_move = not self._player_move
-
-
-mt = MoveTree('prep/as_white.txt', True)
-mt._tree.show()
