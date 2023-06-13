@@ -19,9 +19,10 @@ FIELD_SIZE = BOARD_SIZE // 8
 
 class OpeningPractice:
 
-    def __init__(self, is_player_white) -> None:
+    def __init__(self, is_player_white: bool = False, hint: bool = True) -> None:
         self._board = chess.Board()
         self._is_player_white = is_player_white
+        self._hint = hint
         self._move_tree = MoveTree('prep/as_white.txt' if is_player_white else 'prep/as_black.txt', is_player_white)
         self._cols = list(ascii_lowercase)[0:8] if is_player_white else list(ascii_lowercase)[0:8][::-1]
         self._rows = [str(i) for i in (range(8,0,-1) if is_player_white else range(1,9))]
@@ -48,22 +49,23 @@ class OpeningPractice:
     def move(
             self,
             move_uci: str = None,
-            move_san: str = None):
+            move_san: str = None) -> bool:
         if move_uci:
             move = chess.Move.from_uci(move_uci)
             san = self._board.san(move)
-            try:
-                res = self._move_tree.check_and_play_move(san)
-                if res == 'gg':
-                    print('Nice')
-                    self.game_over = True
-            except ValueError:
-                print("Wrong move")
+            possible_moves = self._move_tree.get_player_moves()
+            if not possible_moves:
+                print('Nice')
                 self.game_over = True
-            self._board.push(move)
+            if san not in possible_moves:
+                print(f"{san} - Wrong move" + (" Possible move(s):" + ', '.join(possible_moves) if self._hint else ''))
+                return False
+            self._move_tree.play_move(san)
         elif move_san:
             move = self._board.parse_san(move_san)
-            self._board.push(move)
+        
+        self._board.push(move)
+        return True
 
     def play_opponent_move(self):
         move = self._move_tree.get_opponent_move()
@@ -116,15 +118,16 @@ def main(is_player_white: bool):
                 mouse_pressed = True
                 move_start_field = game.calculate_field(*event.dict['pos'])
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and mouse_pressed:
-                move_end_field = game.calculate_field(*event.dict['pos'])
-                game.move(move_uci=move_start_field + move_end_field)
-                screen.blit(game.get_board_surface(), (0, 0))
-                pygame.display.flip()
-                time.sleep(0.3)
-                game.play_opponent_move()
-                screen.blit(game.get_board_surface(), (0, 0))
-                pygame.display.flip()
                 mouse_pressed = False
+                move_end_field = game.calculate_field(*event.dict['pos'])
+                moved = game.move(move_uci=move_start_field + move_end_field)
+                if moved:
+                    screen.blit(game.get_board_surface(), (0, 0))
+                    pygame.display.flip()
+                    time.sleep(0.3)
+                    game.play_opponent_move()
+                    screen.blit(game.get_board_surface(), (0, 0))
+                    pygame.display.flip()
             elif game.game_over:
                 game = OpeningPractice(is_player_white)
                 svg_surface = game.get_board_surface()

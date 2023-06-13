@@ -1,4 +1,5 @@
 import re
+from typing import List
 from treelib import Node, Tree
 import random
 
@@ -46,11 +47,13 @@ class MoveTree:
         self._current_nid = next.identifier
         self._player_move = not self._player_move
         return next.tag
+
+    def get_player_moves(self) -> List[str]:
+        return [n.tag for n in self._tree.children(self._current_nid)]
+       
     
-    def check_and_play_move(self, move: str) -> None:
+    def play_move(self, move: str) -> None:
         children = self._tree.children(self._current_nid)
-        if not children:
-            return "gg"
         # By default we should only have one child but let's make it work for multiple children too
         candidates = list(filter(lambda node: node.tag == move, children))
         if len(candidates) != 1:
