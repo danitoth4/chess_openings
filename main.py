@@ -25,7 +25,7 @@ class OpeningPractice:
         self._move_tree = MoveTree('prep/as_white.txt' if is_player_white else 'prep/as_black.txt', is_player_white)
         self._cols = list(ascii_lowercase)[0:8] if is_player_white else list(ascii_lowercase)[0:8][::-1]
         self._rows = [str(i) for i in (range(8,0,-1) if is_player_white else range(1,9))]
-        self._game_over = False
+        self.game_over = False
         if not is_player_white:
             self.play_opponent_move()
 
@@ -56,10 +56,10 @@ class OpeningPractice:
                 res = self._move_tree.check_and_play_move(san)
                 if res == 'gg':
                     print('Nice')
-                    self._game_over = True
+                    self.game_over = True
             except ValueError:
                 print("Wrong move")
-                self._game_over = True
+                self.game_over = True
             self._board.push(move)
         elif move_san:
             move = self._board.parse_san(move_san)
@@ -125,6 +125,11 @@ def main(is_player_white: bool):
                 screen.blit(game.get_board_surface(), (0, 0))
                 pygame.display.flip()
                 mouse_pressed = False
+            elif game.game_over:
+                game = OpeningPractice(is_player_white)
+                svg_surface = game.get_board_surface()
+                screen.blit(svg_surface, (0, 0))
+                pygame.display.flip()
 
 if __name__ == "__main__":
     is_player_white = None
