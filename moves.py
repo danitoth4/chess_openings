@@ -1,9 +1,10 @@
 import re
+from time import time
 from typing import List
 from treelib import Node, Tree
 import random
 
-random.seed(1000)
+random.seed(time())
 
 class MoveTree:
 
@@ -11,7 +12,7 @@ class MoveTree:
         tree = Tree()
         self._player_move = player_move
         # allows multiple starting moves
-        tree.create_node('+', 'root')
+        tree.create_node('+', hash(''))
         with open(move_list_path, 'r') as f:
             line = f.readline()
             while line.strip() != '':
@@ -20,29 +21,29 @@ class MoveTree:
                 for i, move in enumerate(moves):
                     nodes.extend([('w' + str(i + 1), move.split()[0]), ('b' + str(i + 1), move.split()[1])])
 
-                for i, node in enumerate(nodes):
-                    tag=node[1]
-                    identifier=node[0] + node[1]
-                    parent=nodes[i - 1][0] + nodes[i - 1][1] if i > 0 else 'root'
+                for i in range(len(nodes)):
+                    tag=nodes[i][1]
+                    parent_id = hash("".join([n[1] for n in nodes[:i]]))
+                    identifier = hash("".join([n[1] for n in nodes[:i+1]]))
                     if identifier not in tree:
-                        if player_move and len(tree.children(parent)) >= 1:
-                            # TODO customize this scenario
+                        if player_move and len(tree.children(parent_id)) >= 1:
+                            print(identifier, parent_id)
                             raise ValueError('Multiple responses for same move')
                         else:
-                            tree.create_node(tag, identifier, parent=parent)
+                            tree.create_node(tag, identifier, parent=parent_id)
                     
                     player_move = not player_move
                 
                 line = f.readline()
 
         self._tree = tree
-        self._current_nid = 'root'
+        self._current_nid = hash('')
             
     def get_opponent_move(self) -> str:
         children = self._tree.children(self._current_nid)
         if not children:
             return "gg"
-        
+        print(children)
         next = random.choice(children)
         self._current_nid = next.identifier
         self._player_move = not self._player_move

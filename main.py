@@ -1,5 +1,6 @@
 import pygame
 import io
+import os
 import sys
 import time
 import random
@@ -71,7 +72,7 @@ class OpeningPractice:
         move = self._move_tree.get_opponent_move()
         if move == 'gg':
             print('Nice')
-            self._game_over = True
+            self.game_over = True
             return
         self.move(move_san=move)
 
@@ -100,6 +101,9 @@ def maintain_aspect_ratio(new_width, new_height):
 
 def main(is_player_white: bool):
     pygame.init()
+    x = 100
+    y = 45
+    os.environ['SDL_VIDEO_WINDOW_POS'] = f"{x},{y}"
     screen = pygame.display.set_mode((SIZE, SIZE))
     game = OpeningPractice(is_player_white)
     svg_surface = game.get_board_surface()
